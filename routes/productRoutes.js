@@ -5,7 +5,7 @@ const {
   uploadProductFile,
   getAProduct, getCart,
   getProducts, getNewArrivalProducts,  getProductCartigory,   
-  uploadMultipleImages,   getWeeklyProducts, addToCart ,
+  uploadMultipleImages,   getWeeklyProducts, addCart ,
   editProduct,  
   deleteProduct, getTopTrendingProducts, 
 } = require('./../controllers/productController');
@@ -22,7 +22,7 @@ productsRoutes.get('/weekly-products', getWeeklyProducts);
 productsRoutes.get('/new-arrival-products', getNewArrivalProducts);
 productsRoutes.get('/top-trending-products',  getTopTrendingProducts);
 productsRoutes.patch('/:id', editProduct);
-productsRoutes.post('/add', protect, addToCart );
+productsRoutes.post('/cart/add', protect, addCart );
 productsRoutes.delete('/:id', deleteProduct); 
 productsRoutes.get('/categories/:product__category', getProductCartigory);  
 productsRoutes.get('/:id', getAProduct);

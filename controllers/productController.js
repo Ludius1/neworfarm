@@ -425,56 +425,59 @@ const getAProduct = async (req, res, next) => {
 
 
 
-const addToCart = async (req, res) => {
-  const { productId, quantity } = req.body;
-  const userId = req.user.id; 
-  try {
-    // Find the product
-    const product = await Product.findById(productId).populate('prdDetailsId prdCategoryId prdSectionId');
+// const addToCart = async (req, res) => {
+//   const { productId, quantity } = req.body;
+//   const userId = req.user.id; 
+//   try {
+//     // Find the product
+//     const product = await Product.findById(productId).populate('prdDetailsId prdCategoryId prdSectionId');
+//     console.log(product)
 
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+//     if (!product) {
+//       return res.status(404).json({ message: 'Product not found' });
+//     }
 
-    // Check if the cart already exists for the user
-    let cart = await Cart.findOne({ userId });
+//     // Check if the cart already exists for the user
+//     let cart = await Cart.findOne({ user:userId });
     
-    if (!cart) {
-      // If not, create a new cart
-      cart = new Cart({
-        userId,
-        items: []
-        
-      });
-    }
+//     if (!cart) {
+//       // If not, create a new cart
+//       cart = new Cart({
+//        user: userId,
+//         productId: product._id,
+//         items: [],
+//         prdDetailsId: product.prdDetailsId._id
+//       });
+//     }
 
-    // Check if the product is already in the cart
-    const existingItemIndex = cart.items.findIndex(item => item.productId.toString() === productId.toString());
+//     // // Check if the product is already in the cart
+//     // const existingItemIndex = cart.items.findIndex(item => item.productId.toString() === productId.toString());
 
-    if (existingItemIndex > -1) {
-      // Update the quantity if the product is already in the cart
-      cart.items[existingItemIndex].quantity += quantity;
-    } else {
-      // Add new item to the cart
-      cart.items.push({ productId, quantity });
-    }
+//     // if (existingItemIndex > -1) {
+//     //   // Update the quantity if the product is already in the cart
+//     //   cart.items[existingItemIndex].quantity += quantity;
+//     // } else {
+//     //   // Add new item to the cart
+//     //   cart.items.push({ productId, quantity });
+//     // }
 
-    await cart.save();
+//     await cart.save();
 
-    res.status(200).json({ message: 'Product added to cart successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
+//     res.status(200).json({ message: 'Product added to cart successfully' });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// };
 
 
 
 
 const getCart = async (req, res) => {
+  const userId = req.user
   try {
     // Fetch cart and populate product details
-    const cart = await Cart.findOne()
+    const cart = await Cart.find({user: userId})
         .populate('items.productId').populate('prdDetailsId').populate('prdSectionId').populate('prdCategoryId')
 
     if (!cart) {
@@ -488,6 +491,32 @@ const getCart = async (req, res) => {
 }
 };
  
+
+
+const addCart=async(req, res)=>{
+
+  const {quantity, productId} = req.body
+  const user = req.user
+
+  // Check if product already exists in cart
+  const checkProduct = await Cart.find({user, 'product.productId': productId})
+  
+  if(checkProduct){
+    // 
+  }
+  else{
+    // Add new product to cart
+    const newItem = await Cart.create({
+      'product.productId': productId,
+      user,
+      quantity: quantity || 1
+    })
+    if(newItem){
+      console.log(newItem)
+    }
+  }
+  
+ }
  
 
 
@@ -510,4 +539,4 @@ const deleteProduct = async (req, res, nextv) => {
 
 
 
-module.exports = {createProducts, addToCart , getTopTrendingProducts, getCart,  getNewArrivalProducts, getProductCartigory, uploadMultipleImages, uploadProductFile, getAProduct, getWeeklyProducts, getProducts, editProduct, deleteProduct}
+module.exports = {createProducts, addCart, getTopTrendingProducts, getCart,  getNewArrivalProducts, getProductCartigory, uploadMultipleImages, uploadProductFile, getAProduct, getWeeklyProducts, getProducts, editProduct, deleteProduct}

@@ -2,28 +2,41 @@ const mongoose = require('mongoose');
 const addToCartSchema = require('../models/addToCart');
 
 const cartSchema = new mongoose.Schema({
-  productId: {
+ product:{
+    productId:{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
     required: true
   },
-  prdCategoryId:{
-    type: mongoose.Types.ObjectId,
+  quantity: {
+    type: Number,
     required: true,
-    ref: "ProductCategory"
+    min: 1, 
+    default: 1
+  }
 },
-prdSectionId:{
-    type: mongoose.Types.ObjectId,
-    required: true,
-    ref: "ProductSection"
+//   prdCategoryId:{
+//     type: mongoose.Types.ObjectId,
+//     required: false,
+//     ref: "ProductCategory"
+// },
+user: {
+  type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
 },
+// prdSectionId:{
+//     type: mongoose.Types.ObjectId,
+//     required: false,
+//     ref: "ProductSection"
+// },
 
-  prdDetailsId:{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "ProductDetails",
-    required: true,
-},
-  items: [addToCartSchema]
+//   prdDetailsId:{
+//     type: mongoose.Schema.Types.ObjectId,
+//     ref: "ProductDetails",
+//     required: true,
+// },
+  // items: [addToCartSchema]
 }, {
   timestamps: true
 });
