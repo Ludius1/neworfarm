@@ -44,11 +44,11 @@ const createProducts = async (req, res) => {
         let  prdSect;
 switch (product__section) {
   case "Weekly Food Offers":
-    prdSect = "669e311fec684bc472f079b0"
+    prdSect = "669e311fec684bc472f079b0" 
     break;
     case "New Arrivals":
       prdSect = "669d047458d29d7163e496ab"
-      break; 
+      break;  
  
   default: "669e311fec684bc472f079b0"
     break;
@@ -198,25 +198,26 @@ const getProductCartigory = async (req, res, next) => {
 //UNPROTECTED
 const getNewArrivalProducts = async (req, res, next) => {
   try {
-    // Find the ID for the "Weekly Food Offers" section
-    const NewArrivalSection = await ProductSection.find({ product__section: 'New Arrivals' });
+  
+    // const weeklySection = await ProductSection.findOne({ product__section: 'Weekly Food Offers' });
 
-    if (!NewArrivalSection) {
-        return res.status(404).json({ message: 'New arrival product section not found' });
-    }
+    // if (!weeklySection) {
+    //   return res.status(404).json({ message: 'Weekly Food Offers section not found' });
+    // }
 
-    // Query products with the found section ID
-    const newArrivalProducts = await Product.find({ prdSectionId: NewArrivalSection._id }).populate('prdDetailsId')   
-    .populate('prdCategoryId')
-    .populate('prdSectionId')
-    .sort({ createdAt: -1 });
+    const arrivalProducts = await Product.find({ prdSectionId: "669d047458d29d7163e496ab" })
+      .populate('prdDetailsId')
+      .populate('prdCategoryId')
+      .populate('prdSectionId')
+      .sort({ createdAt: -1 }); 
 
-    return res.status(200).json(newArrivalProducts);
-} catch (error) {
+    return res.status(200).json(arrivalProducts);
+  } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Server error' });
+  }
 }
-};
+
 
 
 //Get a weekly Product
@@ -232,7 +233,7 @@ const getTopTrendingProducts = async (req, res, next) => {
     }
 
     // Query products with the found section ID
-    const TopTrendingProducts = await Product.find({ prdSectionId: weeklySection._id }).populate('prdDetailsId')   
+    const TopTrendingProducts = await Product.find({ prdSectionId: TopTrendingSection._id }).populate('prdDetailsId')   
     .populate('prdCategoryId')
     .populate('prdSectionId')
     .sort({ createdAt: -1 });
@@ -245,7 +246,7 @@ const getTopTrendingProducts = async (req, res, next) => {
 };
 
 //Get a weekly Product
-// Get: api/products/categories
+// Get: api/products/categories 
 //UNPROTECTED
 const    getWeeklyProducts = async (req, res, next) => {
   try {
@@ -420,7 +421,7 @@ const getAProduct = async (req, res, next) => {
     return res.status(500).json({ error: error.message });
 }  
 }     
-
+ 
 
 
 
@@ -444,7 +445,7 @@ const addToCart = async (req, res) => {
       cart = new Cart({
         userId,
         items: []
-        
+
       });
     }
 

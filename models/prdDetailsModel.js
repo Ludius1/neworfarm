@@ -3,7 +3,6 @@ const {Schema, model, default: mongoose} = require('mongoose')
 const ProductDetailsSchema = new Schema({
     src: {
         type: [String],
-        // validate: [arrayLimit, '{PATH} exceeds the limit of 3'],
     },
     productImgLeft: {
         type: String,

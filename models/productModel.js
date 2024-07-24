@@ -67,10 +67,10 @@ const productSchema = new Schema({
         type: String,
     //     required: true,
     },
-    productYoutubeLink: {
-        type: String,
-        default: 'https://www.youtube.com/embed/rLrV5Tel7zw?si=KZFCDrbrWhwoWByS',
-    },
+    // productYoutubeLink: {
+    //     type: String,
+    //     default: 'https://www.youtube.com/embed/rLrV5Tel7zw?si=KZFCDrbrWhwoWByS',
+    // },
     productSupremeQualityDetails: {
         type: String,
         // required: true,
