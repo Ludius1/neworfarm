@@ -1,5 +1,6 @@
 const Product = require('../models/productModel');
 const Users = require('../models/userModel');
+const Notification =   require('../models/Notification');
 const Cart = require('../models/cartModel');
 const AddProductToCart = require('../models/addToCart');
 const ProductDetails = require('../models/prdDetailsModel');
@@ -164,6 +165,115 @@ const getProducts = async (req, res, next) => {
    }
 }    
 
+const notificationnContent = async (req, res, next) => {
+    try {
+      const notification = await Notification.findOne();
+      res.json(notification);
+    }catch(error){
+      console.log(error.message)
+      return res.status(500).json({message:'Can not fetch all notification', error: error.message})
+    }
+}
+const postnotificationnContent = async (req, res, next) => {
+  const { content } = req.body;
+  let notification = await Notification.findOne();
+  if (!notification) {
+    notification = new Notification({ content });
+  } else {
+    notification.content = content;
+  }
+  await notification.save();
+  res.json(notification);
+}
+ 
+const deleteProduct = async (req, res) => {
+  const { productId } = req.params;
+
+  try {
+      // Check if the product exists
+      const product = await Product.findById(productId);
+      if (!product) {
+          return res.status(404).json({ msg: "Product not found" });
+      }
+
+      // Delete associated product details if necessary
+      if (product.prdDetailsId) {
+          await ProductDetails.findByIdAndDelete(product.prdDetailsId);
+      }
+
+      // Delete associated product category if necessary
+      if (product.prdCategoryId) {
+          await ProductCategory.findByIdAndDelete(product.prdCategoryId);
+      }
+
+      // Optionally, delete associated product section if necessary
+      // You might need to adjust this if your design requires deleting sections
+      // if (product.prdSectionId) {
+      //     await ProductSection.findByIdAndDelete(product.prdSectionId);
+      // }
+
+      // Finally, delete the product
+      await Product.findByIdAndDelete(productId);
+
+      res.status(200).json({ msg: "Product deleted successfully" });
+
+  } catch (error) {
+      console.error("Error deleting product:", error);
+      res.status(500).json({ error: error.message });
+  }
+};
+
+
+const deleteProductFromCart = async (req, res) => {
+  const userId = req.user;
+  const { productId } = req.params;
+
+  try {
+    // Find and delete the specific product from the user's cart
+    const deletedCartItem = await Cart.findOneAndDelete({
+      user: userId,
+      'product.productId': productId
+    });
+    console.log('new', deletedCartItem) 
+
+    if (!deletedCartItem) {
+      return res.status(404).json({ message: 'Product not found in cart' });
+    }
+
+    res.status(200).json({ message: 'Product removed from cart successfully' });
+  } catch (error) {
+    console.error('Error deleting product from cart:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+
+const searchProducts = async (req, res) => {
+  try {
+    const { query } = req.query; 
+
+    if (!query) {
+      return res.status(400).json({ msg: 'Search query is required' });
+    }
+
+    // Search for products that match the query
+    const products = await Product.find({
+      $or: [
+        { product__name: { $regex: query, $options: 'i' } }, // Case-insensitive match
+        { description: { $regex: query, $options: 'i' } }
+      ]
+    }).sort({ updatedAt: -1 }).populate('prdDetailsId').populate('prdCategoryId').populate('prdSectionId');
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error('Error searching products:', error);
+    res.status(500).json({ msg: 'Server error', error: error.message });
+  }
+}; 
+
+
+
  
 //Get a Product category
 // Get: api/products/categories
@@ -273,137 +383,105 @@ const    getWeeklyProducts = async (req, res, next) => {
 //Edit a product
 // Get: api/products/edit-product
 //UNPROTECTED
-const editProduct = async (req, res, next) => {
-  
-  const { id: productId } = req.params;
+const editProduct = async (req, res) => {
+  const { productId } = req.params;
   const {
-    product__name,
-    productRating,
-    price,
-    old__price,
-    shop,
-    desc,
-    badge,
-    NumberLeft,
-    type,
-    mfg,
-    brandName,
-    featurePro,
-    availability,
-    life__span,
-    mainProductDesc,
-    productElementDetails, 
-    productDetailsNEW,
-    product__category,
-    prodSubCartigory,
-    src,
-    productImgLeft,
-    productPoster,
-    productYoutubeLink,
-    productSupremeQualityDetails,
+      product__name,
+      productRating,
+      price,
+      old__price,
+      shop,
+      desc,
+      badge,
+      NumberLeft,
+      type,
+      mfg,
+      brandName,
+      featurePro,
+      availability,
+      life__span,
+      mainProductDesc,
+      productElementDetails, 
+      productDetailsNEW,
+      product__category,
+      prodSubCartigory,
+      product__section,
+      src,
+      productImgLeft,
+      productPoster,
+      productYoutubeLink,
+      productSupremeQualityDetails,
   } = req.body;
 
-  if (!productId) {
-    return res.status(400).json({ msg: 'Product ID must be provided' });
-  }
-
   try {
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ msg: 'Product not found' });
-    }
-
-    // Update product category if provided
-    if (product__category || prodSubCartigory) {
-      const updatedCategory = await ProductCategory.findByIdAndUpdate(
-        product.prdCategoryId,
-        { product__category, prodSubCartigory },
-        { new: true }
-      );
-      if (!updatedCategory) {
-        return res.status(500).json("An error occurred while updating product category");
+      // Check if the product exists
+      const product = await Product.findById(productId);
+      if (!product) {
+          return res.status(404).json({ msg: "Product not found" });
       }
-    }
 
-    // Update product details if provided
-    if (src || productImgLeft || productPoster) {
-      const updatedDetails = await ProductDetails.findByIdAndUpdate(
-        product.prdDetailsId,
-        { src, productPoster, productImgLeft },
-        { new: true }
+      console.log("Original Product:", product);
+
+      // Prepare update data
+      const updateData = {
+          product__name,
+          productRating,
+          price,
+          old__price,
+          shop,
+          desc,
+          badge,
+          NumberLeft,
+          type,
+          mfg,
+          brandName,
+          featurePro,
+          availability,
+          life__span,
+          mainProductDesc,
+          productElementDetails, 
+          productDetailsNEW,
+          product__category,
+          prodSubCartigory,
+          product__section,
+          src,
+          productImgLeft,
+          productPoster,
+          productYoutubeLink,
+          productSupremeQualityDetails,
+      };
+
+      console.log("Update Data:", updateData);
+
+      // Update product details
+      const updatedProduct = await Product.findByIdAndUpdate(
+          productId,
+          updateData,
+          { new: true, runValidators: true } // Return the updated document and validate before saving
       );
-      if (!updatedDetails) {
-        return res.status(500).json("An error occurred while updating product details");
+
+      console.log("Updated Product:", updatedProduct);
+
+      // Check if update was successful
+      if (!updatedProduct) {
+          return res.status(400).json({ msg: "Failed to update product" });
       }
-    }
 
-    // Update the main product
-    const updatedProduct = await Product.findByIdAndUpdate(
-      productId,
-      {
-        product__name,
-        productRating,
-        price,
-        old__price,
-        shop,
-        desc,
-        badge,
-        NumberLeft,
-        type,
-        mfg,
-        brandName,
-        featurePro,
-        availability,
-        life__span,
-        mainProductDesc,
-        productElementDetails,
-        productDetailsNEW,
-        productSupremeQualityDetails,
-        productYoutubeLink
-      },
-      { new: true }
-    );
-
-    if (updatedProduct) {
+      // Send the updated product as a response
       res.status(200).json({
-        msg: "Product updated successfully",
-        data: updatedProduct,
+          msg: "Product updated successfully",
+          data: updatedProduct
       });
-    } else {
-      res.status(500).json("An error occurred while updating the product");
-    }
 
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+      console.error("Error updating product:", error);
+      res.status(500).json({ error: error.message });
   }
+};
+
+
+
  
-}
-
-
- 
-
-// //Get  all product in cart
-// const getCart = async (req, res, next) => {
-//   try {
-//     const cartSection = await ProductSection.findOne({ product__section: 'Weekly Food Offers' });
-
-//     if (!weeklySection) {
-//         return res.status(404).json({ message: 'Weekly Food Offers section not found' });
-//     }
-
-//     // Query products with the found section ID
-//     const weeklyProducts = await Product.find({ prdSectionId: weeklySection._id }).populate('prdDetailsId')   
-//     .populate('prdCategoryId')
-//     .populate('prdSectionId').populate('cartId')
-//     .sort({ createdAt: -1 });
-
-//     return res.status(200).json(weeklyProducts);
-// } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ message: 'Server error' });
-// }
-// };
-
 
 //Get a Product
 const getAProduct = async (req, res, next) => {
@@ -424,72 +502,83 @@ const getAProduct = async (req, res, next) => {
  
 
 
+ 
+ 
 
-
-const addToCart = async (req, res) => {
-  const { productId, quantity } = req.body;
-  const userId = req.user.id; 
+const getCart = async (req, res) => {
+  const userId = req.user
   try {
-    // Find the product
-    const product = await Product.findById(productId).populate('prdDetailsId prdCategoryId prdSectionId');
+    // Fetch cart and populate product details
+    const cart = await Cart.find({user: userId}).populate({
+      path: 'product.productId',
+      populate: {
+        path: 'prdDetailsId',
+        model: 'ProductDetails' // assuming 'ProductDetails' is your model for product details
+      }
+    })
 
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-
-    // Check if the cart already exists for the user
-    let cart = await Cart.findOne({ userId });
-    
     if (!cart) {
-      // If not, create a new cart
-      cart = new Cart({
-        userId,
-        items: []
-
-      });
+        return res.status(404).json({ message: 'Cart not found' });
     }
 
-    // Check if the product is already in the cart
-    const existingItemIndex = cart.items.findIndex(item => item.productId.toString() === productId.toString());
-
-    if (existingItemIndex > -1) {
-      // Update the quantity if the product is already in the cart
-      cart.items[existingItemIndex].quantity += quantity;
-    } else {
-      // Add new item to the cart
-      cart.items.push({ productId, quantity });
-    }
-
-    await cart.save();
-
-    res.status(200).json({ message: 'Product added to cart successfully' });
+    res.status(200).json({ cart });
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching cart:', error);
     res.status(500).json({ message: 'Server error' });
+  }       
+
+}
+
+
+
+
+
+ 
+
+
+const addCart = async (req, res) => {
+  try {
+    const { quantity, productId } = req.body;
+    const user = req.user;
+    console.log("productId: ",productId)
+
+    // Check if the product already exists in the cart
+    const existingProduct = await Cart.find({ user, 'product.productId': productId });
+    console.log(existingProduct)
+    if (existingProduct.length>=1) {
+      // Product already exists in the cart
+
+      const updateQuantity = await Cart.findOneAndUpdate({'product.productId':productId}, { 'product.quantity': quantity}, {new:true})
+      console.log("updatecart: ", updateQuantity)
+      if(!updateQuantity)  {
+        res.status(500).json({ msg: 'Erorr updating quantity', success: false });
+      }
+      res.status(200).json({ msg: 'Product quantity Updated sucessfully', success: true, data: updateQuantity });
+    } else {
+      // Add new product to cart
+      const newItem = await Cart.create({
+        'product.productId': productId,
+        user,
+        quantity: quantity || 1
+      });
+      console.log('newitem', newItem)
+
+      if (newItem) {
+        res.status(201).json({ msg: 'Product added to cart successfully', success: true });
+   
+      } else {
+        res.status(500).json({ msg: 'Failed to add product to cart', success: false });
+      }
+    }
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ msg: 'Server error', success: false });
   }
 };
 
 
 
 
-const getCart = async (req, res) => {
-  try {
-    // Fetch cart and populate product details
-    const cart = await Cart.findOne()
-        .populate('items.productId').populate('prdDetailsId').populate('prdSectionId').populate('prdCategoryId')
-
-    if (!cart) {
-        return res.status(404).json({ message: 'Cart not found' });
-    }
- 
-    res.status(200).json({ cart });
-} catch (error) {
-    console.error('Error fetching cart:', error);
-    res.status(500).json({ message: 'Server error' });
-}
-};
- 
- 
 
 
 
@@ -501,14 +590,4 @@ const getCart = async (req, res) => {
 
 
 
-
-
-
-
-const deleteProduct = async (req, res, nextv) => {
-    res.json('delete products')
-}
-
-
-
-module.exports = {createProducts, addToCart , getTopTrendingProducts, getCart,  getNewArrivalProducts, getProductCartigory, uploadMultipleImages, uploadProductFile, getAProduct, getWeeklyProducts, getProducts, editProduct, deleteProduct}
+module.exports = {createProducts, postnotificationnContent,notificationnContent, deleteProductFromCart, searchProducts, addCart, getTopTrendingProducts, getCart,  getNewArrivalProducts, getProductCartigory, uploadMultipleImages, uploadProductFile, getAProduct, getWeeklyProducts, getProducts, editProduct, deleteProduct}

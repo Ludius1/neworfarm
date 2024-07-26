@@ -16,6 +16,7 @@ app.use(cors())
 // app.use('/uploads', express.static(__dirname + '/uploads'))
 connectDb() 
 
+
 const port = process.env.PORT || 5000 
 const baseUrl = '/api/v1'
 app.use(`${baseUrl}/user`, userRoutes)
