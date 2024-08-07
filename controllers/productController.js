@@ -1,6 +1,6 @@
 const Product = require('../models/productModel');
 const Users = require('../models/userModel');
-const Notification =   require('../models/Notification');
+// const Notification =   require('../models/Notification');
 const Cart = require('../models/cartModel');
 const AddProductToCart = require('../models/addToCart');
 const ProductDetails = require('../models/prdDetailsModel');
@@ -165,15 +165,15 @@ const getProducts = async (req, res, next) => {
    }
 }    
 
-const notificationnContent = async (req, res, next) => {
-    try {
-      const notification = await Notification.findOne();
-      res.json(notification);
-    }catch(error){
-      console.log(error.message)
-      return res.status(500).json({message:'Can not fetch all notification', error: error.message})
-    }
-}
+// const notificationnContent = async (req, res, next) => {
+//     try {
+//       const notification = await Notification.findOne();
+//       res.json(notification);
+//     }catch(error){
+//       console.log(error.message)
+//       return res.status(500).json({message:'Can not fetch all notification', error: error.message})
+//     }
+// }
 const postnotificationnContent = async (req, res, next) => {
   const { content } = req.body;
   let notification = await Notification.findOne();
@@ -247,7 +247,7 @@ const deleteProductFromCart = async (req, res) => {
   }
 };
 
-
+ 
 
 const searchProducts = async (req, res) => {
   try {
@@ -530,9 +530,6 @@ const getCart = async (req, res) => {
 }
 
 
-
-
-
  
 
 
@@ -582,12 +579,12 @@ const addCart = async (req, res) => {
 
 
 
+ 
+
+
+// notificationnContent, 
 
 
 
 
-
-
-
-
-module.exports = {createProducts, postnotificationnContent,notificationnContent, deleteProductFromCart, searchProducts, addCart, getTopTrendingProducts, getCart,  getNewArrivalProducts, getProductCartigory, uploadMultipleImages, uploadProductFile, getAProduct, getWeeklyProducts, getProducts, editProduct, deleteProduct}
+module.exports = {createProducts, postnotificationnContent,deleteProductFromCart, searchProducts, addCart, getTopTrendingProducts, getCart,  getNewArrivalProducts, getProductCartigory, uploadMultipleImages, uploadProductFile, getAProduct, getWeeklyProducts, getProducts, editProduct, deleteProduct}

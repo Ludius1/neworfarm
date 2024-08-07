@@ -4,7 +4,7 @@ const {
   createProducts,
   uploadProductFile,
   getAProduct, getCart,deleteProductFromCart,
-  getProducts, getNewArrivalProducts,  getProductCartigory, notificationnContent,  
+  getProducts, getNewArrivalProducts,  getProductCartigory,  
   uploadMultipleImages,  getWeeklyProducts, addCart ,
   editProduct,  postnotificationnContent,
   deleteProduct,searchProducts, getTopTrendingProducts, 
@@ -18,7 +18,7 @@ productsRoutes.post('/upload-multiple-product-images', upload.array('src'), uplo
 productsRoutes.post('/upload-product-images-desc', upload.single('productImgLeft'), uploadProductFile); 
 productsRoutes.get('/', getProducts);
 productsRoutes.get('/cart' , protect, getCart);
-productsRoutes.get('/notification' , notificationnContent);
+// productsRoutes.get('/notification' , notificationnContent);
 productsRoutes.post('/notification' , postnotificationnContent);
 productsRoutes.get('/search' , searchProducts);
 productsRoutes.get('/weekly-products', getWeeklyProducts);
