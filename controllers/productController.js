@@ -504,6 +504,8 @@ const getAProduct = async (req, res, next) => {
 
 const getCart = async (req, res) => {
   const userId = req.user
+
+
   try {
     // Fetch cart and populate product details
     const cart = await Cart.find({user: userId}).populate({
@@ -534,6 +536,12 @@ const addCart = async (req, res) => {
   try {
     const { quantity, productId } = req.body;
     const user = req.user;
+
+
+    // Check if the user is logged in
+    if (!user) {
+      return res.status(401).json({ msg: 'Kindly login to add products to the cart', success: false });
+    }
     console.log("productId: ",productId)
 
     // Check if the product already exists in the cart
