@@ -10,12 +10,12 @@ const productRoutes = require ('./routes/productRoutes')
 
 const app = express()
 app.use(express.json({extended: true}))
-app.use(express.urlencoded({extended: true}))
+app.use(express.urlencoded({extended: true})) 
 app.use(cors())
 // app.use(upload())
 // app.use('/uploads', express.static(__dirname + '/uploads'))
 connectDb() 
-
+  
 
 const port = process.env.PORT || 5000 
 const baseUrl = '/api/v1'

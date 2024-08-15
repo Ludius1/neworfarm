@@ -8,7 +8,7 @@ const userRoutes =  express.Router()
 
 userRoutes.post('/signup', registerUser)
 userRoutes.post('/login', loginUser)
-userRoutes.get('/getuser', getUser)
+userRoutes.get('/getuser', protect, getUser)
 userRoutes.get('/userloginStatus', protect, userloginStatus)
 userRoutes.patch('/update-user', protect, upDateUser)
 userRoutes.post('/change-avatar', protect, upload.single('avatar'), changeAvatar)

@@ -251,7 +251,7 @@ const deleteProductFromCart = async (req, res) => {
 
 const searchProducts = async (req, res) => {
   try {
-    const { query } = req.query; 
+    const { query } = req.query;     
 
     if (!query) {
       return res.status(400).json({ msg: 'Search query is required' });
@@ -480,7 +480,6 @@ const editProduct = async (req, res) => {
 };
 
 
-
  
 
 //Get a Product
@@ -500,8 +499,6 @@ const getAProduct = async (req, res, next) => {
 }  
 }     
  
-
-
  
  
 
@@ -530,7 +527,7 @@ const getCart = async (req, res) => {
 }
 
 
- 
+  
 
 
 const addCart = async (req, res) => {
@@ -573,13 +570,7 @@ const addCart = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
- 
+  
 
 
 // notificationnContent, 

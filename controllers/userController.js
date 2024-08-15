@@ -128,13 +128,25 @@ const logoutUser = async (req, res) => {
 //POST: /api/getuser/getuser:
 //PROTECTED
 const getUser = async (req, res) => {
-  const user = await User.findById(req.user.id).select("-password");
-  if (user) {
-    res.status(200).json(user);
-  } else {
-    res.status(400).json("message: User not found!", err.error.message);
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    const user = await User.findById(req.user.id).select("-password");
+
+    if (user) { 
+      return res.status(200).json(user);
+    } else {
+      return res.status(404).json({ message: 'User not found' });
+    }
+  } catch (err) {  
+    console.error(err.message);
+    return res.status(500).json({ message: 'Server error' });
   }
 };
+
+
 
 // USERLOGINSTATUS
 //POST: /api/users/id:
